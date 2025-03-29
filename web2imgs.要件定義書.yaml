@@ -1,0 +1,136 @@
+project_name: Webページ画像化ツール
+
+purpose: >
+  指定されたURLのWebページを画像として保存するツールを作成する。
+  Webページの内容が不明瞭にならないように、適切に分割して画像化し、
+  固定の命名規則に基づいたファイル名で保存する。また、動的コンテンツにも可能な限り対応する。
+
+environment:
+  os: Windows 11
+  language: Python
+  execution_format: コマンドラインツール
+
+functional_requirements:
+  input:
+    url:
+      description: コマンドライン引数としてURLを受け取る
+      example: python tool.py --url "https://example.com"
+    image_size:
+      default:
+        width: 1024
+        height: 1024
+      optional: true
+      description: カスタムサイズを指定可能
+      example: python tool.py --url "https://example.com" --width 800 --height 600
+    wait_time:
+      default: 5
+      optional: true
+      description: 動的コンテンツのレンダリング待機時間（秒単位）
+      example: python tool.py --url "https://example.com" --wait 10
+    headless_mode:
+      default: true
+      optional: true
+      description: ヘッドレスモード（ブラウザが表示されない）の有効/無効
+      example: python tool.py --url "https://example.com" --no-headless
+    cookies_handling:
+      default: true
+      optional: true
+      description: クッキーの読み込み/保存の有効/無効
+      example: python tool.py --url "https://example.com" --no-cookies
+    cookies_file:
+      default: "browser_cookies.pkl"
+      optional: true
+      description: クッキーファイルのパス
+      example: python tool.py --url "https://example.com" --cookies-file "custom_cookies.pkl"
+
+  output:
+    image_file:
+      format: PNG
+      naming_convention: >
+        webpage_<固定文字列>_<日時>.png
+        - 固定文字列: "capture"
+        - 日時フォーマット: YYYYMMDD_HHMMSS
+      example: webpage_capture_20250329_122628.png
+
+  image_splitting:
+    description: >
+      Webページのサイズに応じて、適切に分割して画像化する。
+    default_size:
+      width: 1024
+      height: 1024
+    custom_size: true
+    splitting_logic: >
+      Webページ全体をスクロールしながらスクリーンショットを取得し、
+      指定されたサイズ単位で分割する。
+    output_example:
+      - webpage_capture_20250329_122628_1.png
+      - webpage_capture_20250329_122628_2.png
+
+  dynamic_content_support:
+    description: >
+      Webページの動的コンテンツ（JavaScriptで生成される要素など）にも対応する。
+    methods:
+      - ページ読み込み後、指定された待機時間を待機
+      - 必要に応じて特定の要素が表示されるまで待機
+      - ページ内のJavaScriptを実行して動的要素をレンダリング
+
+  image_quality:
+    resolution: 1920x1080
+    scroll_adjustment: ページの内容が重複しないように調整
+
+non_functional_requirements:
+  performance: >
+    1ページの画像化にかかる時間は60秒以内を目標とする。
+  error_handling:
+    invalid_url: 無効なURLが指定された場合、エラーメッセージを表示して終了
+    no_internet: インターネット接続がない場合、適切なエラーメッセージを表示
+  logging: 実行時のログをコンソールに出力（開始時刻、終了時刻、保存先ファイル名など）
+
+design_requirements:
+  libraries:
+    - selenium: Webページのレンダリングとスクリーンショット取得
+    - pillow: 画像の結合や加工
+    - argparse: コマンドライン引数の解析
+  execution_steps:
+    - コマンドライン引数でURLを受け取る
+    - 必要に応じて画像サイズ（幅と高さ）を指定する
+    - 必要に応じて待機時間を指定する（デフォルトは5秒）
+    - 必要に応じてヘッドレスモードの有効/無効を指定する（デフォルトは有効）
+    - 必要に応じてクッキーの読み込み/保存の有効/無効を指定する（デフォルトは有効）
+    - 必要に応じてクッキーファイルのパスを指定する（デフォルトはbrowser_cookies.pkl）
+    - Seleniumを使用して指定されたURLを開く
+    - クッキーが有効な場合、保存されたクッキーを読み込む
+    - ページ読み込み後、指定された待機時間を待機
+    - Webページ全体をスクロールしながらスクリーンショットを取得
+    - クッキーが有効な場合、クッキーを保存する
+    - 必要に応じて画像を指定されたサイズ単位で分割し、連番付きで保存
+    - 保存したファイル名をコンソールに出力
+
+usage_instructions:
+  setup:
+    - Python環境をセットアップ
+    - 必要なライブラリをインストール: pip install selenium pillow
+  execution:
+    default: python tool.py --url "https://example.com"
+    custom_size: python tool.py --url "https://example.com" --width 800 --height 600
+    custom_wait: python tool.py --url "https://example.com" --wait 10
+    disable_headless: python tool.py --url "https://example.com" --no-headless
+    disable_cookies: python tool.py --url "https://example.com" --no-cookies
+    custom_cookies_file: python tool.py --url "https://example.com" --cookies-file "custom_cookies.pkl"
+    combined_options: python tool.py --url "https://example.com" --width 800 --height 600 --wait 10 --no-headless --cookies-file "custom_cookies.pkl"
+
+constraints:
+  - 動的コンテンツのレンダリングに時間がかかる場合、処理時間が長くなる可能性がある
+  - ページサイズが非常に大きい場合、画像の保存に時間がかかる可能性がある
+
+schedule:
+  requirements_definition: 2025/03/29
+  implementation_start: 2025/03/30
+  testing_period: 2025/04/01 ～ 2025/04/05
+  release: 2025/04/06
+
+risks_and_mitigations:
+  - risk: 動的コンテンツのレンダリングが完了しない場合、画像が不完全になる可能性
+    mitigation: ページ読み込み後の待機時間を調整し、特定の要素が表示されるまで待機
+  - risk: Webページの読み込みが遅い場合、タイムアウトが発生する可能性
+    mitigation: Seleniumのタイムアウト設定を適切に調整
